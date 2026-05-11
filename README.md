@@ -173,7 +173,7 @@ vms:
     disk_size: sensor.haos_max_disk_usage
     uptime: sensor.haos_uptime
     start: button.haos_start
-    shutdown: button.haos_stop
+    shutdown: button.haos_shut_down
     stop: button.haos_stop
     reboot: button.haos_restart
     snapshot: button.haos_create_snapshot

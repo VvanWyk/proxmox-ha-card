@@ -77,9 +77,38 @@ const TRANSLATIONS = {
       },
       auto_discover_label: "Auto-discover from node",
       auto_discover_note:  "Devices are discovered automatically from the HA device registry. Turn off auto-discover to configure them manually.",
+      tap_action:          "Tap Action",
+      double_tap_action:   "Double Tap Action",
+      hold_action:         "Hold Action",
       delete_vm:   "Delete",
       add_vm:      "Add New",
       new_vm_name: "New",
+      actions: {
+        none:         "None",
+        more_info:    "More Info",
+        navigate:     "Navigate",
+        url:          "URL",
+        call_service: "Call Service",
+      },
+      action_fields: {
+        entity:       "Entity",
+        nav_path:     "Navigation Path (e.g. /lovelace/home)",
+        url:          "URL",
+        service:      "Service (e.g. light.turn_on)",
+        service_data: "Service Data (JSON)",
+      },
+      confirm: {
+        cancel:              "Cancel",
+        confirm:             "Confirm",
+        change_node_heading: "Change Node?",
+        change_node_body:    "Changing the node will overwrite all current entity and sensor settings. Your icon, colour, and interaction overrides will be kept.\n\nContinue?",
+        change_node_btn:     "Change Node",
+        change_device_heading: "Change Device?",
+        change_device_body:    "Changing the device will overwrite all entity and sensor settings. Your icon, colour, and interaction overrides will be kept.\n\nContinue?",
+        change_device_btn:   "Change Device",
+        action_heading:      "Are you sure?",
+        action_body:         "Are you sure you want to:",
+      },
     },
     card: {
       cpu_label:    "CPU Usage",
@@ -87,6 +116,15 @@ const TRANSLATIONS = {
       disk_label:   "Disk Usage",
       running:      "Running",
       stopped:      "Stopped",
+      btn_restart:  "Restart",
+      btn_shutdown: "Shut Down",
+      btn_start_all:"Start All",
+      btn_stop_all: "Stop All",
+      btn_suspend_all: "Suspend All",
+      btn_start:    "Start",
+      btn_stop:     "Stop",
+      btn_reboot:   "Reboot",
+      btn_snapshot: "Snapshot",
     },
     errors: {
       missing_vms: "Please configure 'vms'.",
@@ -166,9 +204,38 @@ const TRANSLATIONS = {
       },
       auto_discover_label: "Automatisch vom Node erkennen",
       auto_discover_note:  "Geräte werden automatisch aus der HA Geräteregistrierung erkannt. Deaktiviere die Auto-Erkennung, um sie manuell zu konfigurieren.",
+      tap_action:          "Tipp-Aktion",
+      double_tap_action:   "Doppeltipp-Aktion",
+      hold_action:         "Halte-Aktion",
       delete_vm:   "Löschen",
       add_vm:      "Neu hinzufügen",
       new_vm_name: "Neu",
+      actions: {
+        none:         "Keine",
+        more_info:    "Mehr Infos",
+        navigate:     "Navigieren",
+        url:          "URL",
+        call_service: "Dienst aufrufen",
+      },
+      action_fields: {
+        entity:       "Entität",
+        nav_path:     "Navigationspfad (z.B. /lovelace/home)",
+        url:          "URL",
+        service:      "Dienst (z.B. light.turn_on)",
+        service_data: "Dienstdaten (JSON)",
+      },
+      confirm: {
+        cancel:              "Abbrechen",
+        confirm:             "Bestätigen",
+        change_node_heading: "Node wechseln?",
+        change_node_body:    "Das Wechseln des Nodes überschreibt alle aktuellen Entitäts- und Sensoreinstellungen. Deine Icon-, Farb- und Interaktionsüberschreibungen bleiben erhalten.\n\nFortfahren?",
+        change_node_btn:     "Node wechseln",
+        change_device_heading: "Gerät wechseln?",
+        change_device_body:    "Das Wechseln des Geräts überschreibt alle Entitäts- und Sensoreinstellungen. Deine Icon-, Farb- und Interaktionsüberschreibungen bleiben erhalten.\n\nFortfahren?",
+        change_device_btn:   "Gerät wechseln",
+        action_heading:      "Bist du sicher?",
+        action_body:         "Bist du sicher, dass du folgendes ausführen möchtest:",
+      },
     },
     card: {
       cpu_label:    "CPU Auslastung",
@@ -176,6 +243,15 @@ const TRANSLATIONS = {
       disk_label:   "Festplatten Nutzung",
       running:      "Läuft",
       stopped:      "Gestoppt",
+      btn_restart:  "Neustart",
+      btn_shutdown: "Herunterfahren",
+      btn_start_all:"Alle starten",
+      btn_stop_all: "Alle stoppen",
+      btn_suspend_all: "Alle suspendieren",
+      btn_start:    "Starten",
+      btn_stop:     "Stoppen",
+      btn_reboot:   "Neu starten",
+      btn_snapshot: "Snapshot",
     },
     errors: {
       missing_vms: "Bitte konfiguriere die 'vms'.",
@@ -248,7 +324,7 @@ class ProxmoxCardEditor extends LitElement {
       start:     `button.${n}_start`,
       stop:      `button.${n}_stop`,
       reboot:    `button.${n}_restart`,
-      shutdown:  `button.${n}_stop`,
+      shutdown:  `button.${n}_shut_down`,
       cpu:       `sensor.${n}_cpu_usage`,
       memory:    `sensor.${n}_memory_usage_percentage`,
       snapshot:  `button.${n}_create_snapshot`,
@@ -388,14 +464,15 @@ class ProxmoxCardEditor extends LitElement {
   }
 
   _actionEditor(label, actionConfig, onChange) {
+    const t = (key) => this._t(key);
     const cfg = actionConfig || { action: 'none' };
     const action = cfg.action || 'none';
     const actionOptions = [
-      { value: 'none',         label: 'None' },
-      { value: 'more-info',    label: 'More Info' },
-      { value: 'navigate',     label: 'Navigate' },
-      { value: 'url',          label: 'URL' },
-      { value: 'call-service', label: 'Call Service' },
+      { value: 'none',         label: t('editor.actions.none') },
+      { value: 'more-info',    label: t('editor.actions.more_info') },
+      { value: 'navigate',     label: t('editor.actions.navigate') },
+      { value: 'url',          label: t('editor.actions.url') },
+      { value: 'call-service', label: t('editor.actions.call_service') },
     ];
     return html`
       <div class="action-editor">
@@ -405,29 +482,29 @@ class ProxmoxCardEditor extends LitElement {
           @value-changed=${(e) => onChange({ ...cfg, action: e.detail.value })}
         ></ha-selector>
         ${action === 'more-info' ? html`
-          <ha-selector .hass=${this.hass} .value=${cfg.entity || ''} label="Entity"
+          <ha-selector .hass=${this.hass} .value=${cfg.entity || ''} label="${t('editor.action_fields.entity')}"
             .selector=${{ entity: {} }}
             @value-changed=${(e) => onChange({ ...cfg, entity: e.detail.value })}
           ></ha-selector>
         ` : ''}
         ${action === 'navigate' ? html`
-          <ha-textfield label="Navigation Path (e.g. /lovelace/home)"
+          <ha-textfield label="${t('editor.action_fields.nav_path')}"
             .value=${cfg.navigation_path || ''}
             @input=${(e) => onChange({ ...cfg, navigation_path: e.target.value })}
           ></ha-textfield>
         ` : ''}
         ${action === 'url' ? html`
-          <ha-textfield label="URL"
+          <ha-textfield label="${t('editor.action_fields.url')}"
             .value=${cfg.url_path || ''}
             @input=${(e) => onChange({ ...cfg, url_path: e.target.value })}
           ></ha-textfield>
         ` : ''}
         ${action === 'call-service' ? html`
-          <ha-textfield label="Service (e.g. light.turn_on)"
+          <ha-textfield label="${t('editor.action_fields.service')}"
             .value=${cfg.service || ''}
             @input=${(e) => onChange({ ...cfg, service: e.target.value })}
           ></ha-textfield>
-          <ha-textfield label="Service Data (JSON)"
+          <ha-textfield label="${t('editor.action_fields.service_data')}"
             .value=${cfg.service_data ? JSON.stringify(cfg.service_data) : ''}
             @input=${(e) => { try { onChange({ ...cfg, service_data: JSON.parse(e.target.value) }); } catch (_) {} }}
           ></ha-textfield>
@@ -561,7 +638,7 @@ class ProxmoxCardEditor extends LitElement {
                     </button>
                   </div>
                   <div class="node-device-row" style="margin-bottom:12px;">
-                    <ha-selector .hass=${this.hass} .value=${vm.device_id || ''} label="${t("editor.fields.vm_device")}" .selector=${{ select: { options: vmDeviceOptions, mode: 'dropdown', custom_value: false } }} @value-changed=${(e) => this._onVmDeviceChanged(index, e.detail.value)} style="flex:1;"></ha-selector>
+                    <ha-selector data-status-selector .hass=${this.hass} .value=${vm.device_id || ''} label="${t("editor.fields.vm_device")}" .selector=${{ select: { options: vmDeviceOptions, mode: 'dropdown', custom_value: false } }} @value-changed=${(e) => this._onVmDeviceChanged(index, e.detail.value)} style="flex:1;"></ha-selector>
                     <button class="defaults-btn" ?disabled=${!vm.device_id && !vm.status} @click=${() => this._loadVmDefaults(index)}>
                       <ha-icon icon="mdi:auto-fix"></ha-icon>${t("editor.fields.node_load_defaults")}
                     </button>
@@ -591,9 +668,9 @@ class ProxmoxCardEditor extends LitElement {
                   <ha-expansion-panel header="${t("editor.sections.interactions")}" outlined style="margin-top:12px;">
                     <div class="panel-content">
                       <div class="action-editors">
-                        ${this._actionEditor('Tap Action',        vm.tap_action,        (v) => this._vmChanged(index, 'tap_action',        v))}
-                        ${this._actionEditor('Double Tap Action', vm.double_tap_action, (v) => this._vmChanged(index, 'double_tap_action', v))}
-                        ${this._actionEditor('Hold Action',       vm.hold_action,       (v) => this._vmChanged(index, 'hold_action',       v))}
+                        ${this._actionEditor(t("editor.tap_action"),        vm.tap_action,        (v) => this._vmChanged(index, 'tap_action',        v))}
+                        ${this._actionEditor(t("editor.double_tap_action"), vm.double_tap_action, (v) => this._vmChanged(index, 'double_tap_action', v))}
+                        ${this._actionEditor(t("editor.hold_action"),       vm.hold_action,       (v) => this._vmChanged(index, 'hold_action',       v))}
                       </div>
                     </div>
                   </ha-expansion-panel>
@@ -612,9 +689,9 @@ class ProxmoxCardEditor extends LitElement {
           <div class="panel-content">
             <p style="margin:0 0 12px;font-size:0.85rem;color:var(--secondary-text-color);">Tap / double-tap / hold on the node area (header &amp; stats)</p>
             <div class="action-editors">
-              ${this._actionEditor('Tap Action',        this.config.tap_action,        (v) => this._changeValue('tap_action',        v))}
-              ${this._actionEditor('Double Tap Action', this.config.double_tap_action, (v) => this._changeValue('double_tap_action', v))}
-              ${this._actionEditor('Hold Action',       this.config.hold_action,       (v) => this._changeValue('hold_action',       v))}
+              ${this._actionEditor(t("editor.tap_action"),        this.config.tap_action,        (v) => this._changeValue('tap_action',        v))}
+              ${this._actionEditor(t("editor.double_tap_action"), this.config.double_tap_action, (v) => this._changeValue('double_tap_action', v))}
+              ${this._actionEditor(t("editor.hold_action"),       this.config.hold_action,       (v) => this._changeValue('hold_action',       v))}
             </div>
           </div>
         </ha-expansion-panel>
@@ -622,20 +699,20 @@ class ProxmoxCardEditor extends LitElement {
       </div>
 
       ${this._pendingDeviceId ? html`
-        <ha-dialog open @closed=${this._cancelNodeDevice} heading="Change Node?">
-          <p style="margin:0 0 24px;">Changing the node will overwrite all current entity and sensor settings. Your icon, colour, and interaction overrides will be kept.<br><br>Continue?</p>
+        <ha-dialog open @closed=${this._cancelNodeDevice} heading="${t('editor.confirm.change_node_heading')}">
+          <p style="margin:0 0 24px;">${t('editor.confirm.change_node_body')}</p>
           <div class="editor-confirm-actions">
-            <button class="editor-confirm-btn cancel" @click=${this._cancelNodeDevice}>Cancel</button>
-            <button class="editor-confirm-btn destructive" @click=${() => this._applyNodeDevice(this._pendingDeviceId)}>Change Node</button>
+            <button class="editor-confirm-btn cancel" @click=${this._cancelNodeDevice}>${t('editor.confirm.cancel')}</button>
+            <button class="editor-confirm-btn destructive" @click=${() => this._applyNodeDevice(this._pendingDeviceId)}>${t('editor.confirm.change_node_btn')}</button>
           </div>
         </ha-dialog>
       ` : ''}
       ${this._pendingVmDevice ? html`
-        <ha-dialog open @closed=${this._cancelVmDevice} heading="Change Device?">
-          <p style="margin:0 0 24px;">Changing the device will overwrite all entity and sensor settings. Your icon, colour, and interaction overrides will be kept.<br><br>Continue?</p>
+        <ha-dialog open @closed=${this._cancelVmDevice} heading="${t('editor.confirm.change_device_heading')}">
+          <p style="margin:0 0 24px;">${t('editor.confirm.change_device_body')}</p>
           <div class="editor-confirm-actions">
-            <button class="editor-confirm-btn cancel" @click=${this._cancelVmDevice}>Cancel</button>
-            <button class="editor-confirm-btn destructive" @click=${() => this._applyVmDevice(this._pendingVmDevice.index, this._pendingVmDevice.deviceId)}>Change Device</button>
+            <button class="editor-confirm-btn cancel" @click=${this._cancelVmDevice}>${t('editor.confirm.cancel')}</button>
+            <button class="editor-confirm-btn destructive" @click=${() => this._applyVmDevice(this._pendingVmDevice.index, this._pendingVmDevice.deviceId)}>${t('editor.confirm.change_device_btn')}</button>
           </div>
         </ha-dialog>
       ` : ''}
@@ -705,8 +782,7 @@ class ProxmoxCard extends LitElement {
   _t(key)         { return localize(this._hass, key); }
 
   setConfig(config) {
-    if (!config.vms) throw new Error(localize(null, "errors.missing_vms"));
-    this.config = { title: "Proxmox", title_icon: "phu:proxmox", title_color: "#E57000", auto_discover: true, ...config };
+    this.config = { title: "Proxmox", title_icon: "phu:proxmox", title_color: "#E57000", auto_discover: true, ...config, vms: config.vms ?? [] };
     this._cpuGraph  = null;
     this._ramGraph  = null;
     this._diskGraph = null;
@@ -725,8 +801,6 @@ class ProxmoxCard extends LitElement {
       if (g.disk) g.disk.hass = hass;
     }
     this.requestUpdate('hass', oldHass);
-    if (this.config) {
-    }
   }
 
   get hass() { return this._hass; }
@@ -752,13 +826,23 @@ class ProxmoxCard extends LitElement {
     if (!this._ramGraph  && this.config.node_memory) this._ramGraph  = this._createGraph(this.config.node_memory, this.config.ram_color  || "#9c27b0");
     if (!this._diskGraph && this.config.node_disk)   this._diskGraph = this._createGraph(this.config.node_disk,   this.config.disk_color || "#4caf50");
 
+    // Build the set of active keys so stale entries (migrated / removed VMs) can be pruned
+    const activeKeys = new Set(effectiveVms.map(vm => vm.status || vm.name));
+    for (const key of this._vmGraphs.keys()) {
+      if (!activeKeys.has(key)) this._vmGraphs.delete(key);
+    }
+
     for (const vm of effectiveVms) {
       const key = vm.status || vm.name;
       if (!this._vmGraphs.has(key)) this._vmGraphs.set(key, { cpu: null, ram: null, disk: null });
       const g = this._vmGraphs.get(key);
-      if (!g.cpu  && vm.cpu)    g.cpu  = this._createGraph(vm.cpu,    this.config.cpu_color  || "#2196f3", 6);
-      if (!g.ram  && vm.memory) g.ram  = this._createGraph(vm.memory, this.config.ram_color  || "#9c27b0", 6);
-      if (!g.disk && vm.disk)   g.disk = this._createGraph(vm.disk,   this.config.disk_color || "#4caf50", 6);
+      // Recreate graph if the entity ID has changed since it was created
+      if (g.cpu  && g._cpuEntity  !== vm.cpu)    { g.cpu  = null; g._cpuEntity  = null; }
+      if (g.ram  && g._ramEntity  !== vm.memory) { g.ram  = null; g._ramEntity  = null; }
+      if (g.disk && g._diskEntity !== vm.disk)   { g.disk = null; g._diskEntity = null; }
+      if (!g.cpu  && vm.cpu)    { g.cpu  = this._createGraph(vm.cpu,    this.config.cpu_color  || "#2196f3", 6); g._cpuEntity  = vm.cpu; }
+      if (!g.ram  && vm.memory) { g.ram  = this._createGraph(vm.memory, this.config.ram_color  || "#9c27b0", 6); g._ramEntity  = vm.memory; }
+      if (!g.disk && vm.disk)   { g.disk = this._createGraph(vm.disk,   this.config.disk_color || "#4caf50", 6); g._diskEntity = vm.disk; }
     }
   }
 
@@ -782,31 +866,20 @@ class ProxmoxCard extends LitElement {
       const find = (domain, suffix) =>
         ids.find(id => id.startsWith(domain + '.') && id.endsWith(suffix)) ?? null;
 
-      const override = (this.config.vms || [])
-        .find(v => v.name?.toLowerCase() === device.name?.toLowerCase()) || {};
-
       return {
-        name:              device.name,
-        _auto:             true,
-        status:            find('binary_sensor', '_status'),
-        cpu:               find('sensor', '_cpu_usage'),
-        memory:            find('sensor', '_memory_usage_percentage'),
-        disk:              find('sensor', '_disk_usage'),
-        disk_size:         find('sensor', '_max_disk_usage'),
-        uptime:            find('sensor', '_uptime'),
-        start:             find('button', '_start'),
-        stop:              find('button', '_stop'),
-        reboot:            find('button', '_restart'),
-        shutdown:          find('button', '_shut_down'),
-        snapshot:          find('button', '_create_snapshot'),
-        icon:              override.icon              || '',
-        image:             override.image             || '',
-        bg_color:          override.bg_color          || '',
-        border:            override.border            || '',
-        shadow:            override.shadow            || '',
-        tap_action:        override.tap_action,
-        double_tap_action: override.double_tap_action,
-        hold_action:       override.hold_action,
+        name:      device.name,
+        _auto:     true,
+        status:    find('binary_sensor', '_status'),
+        cpu:       find('sensor', '_cpu_usage'),
+        memory:    find('sensor', '_memory_usage_percentage'),
+        disk:      find('sensor', '_disk_usage'),
+        disk_size: find('sensor', '_max_disk_usage'),
+        uptime:    find('sensor', '_uptime'),
+        start:     find('button', '_start'),
+        stop:      find('button', '_stop'),
+        reboot:    find('button', '_restart'),
+        shutdown:  find('button', '_shut_down'),
+        snapshot:  find('button', '_create_snapshot'),
       };
     });
   }
@@ -1041,12 +1114,12 @@ class ProxmoxCard extends LitElement {
               </div>
             ` : html`<div></div>`}
             ${hasNodeActions ? html`
-              <div class="node-actions" @click=${(e) => e.stopPropagation()} @mousedown=${(e) => e.stopPropagation()}>
-                <button class="action-btn" title="Restart"     ?disabled=${!this.config.node_restart}     @click=${() => this._confirmAction('Restart',     this.config.node_restart)}><ha-icon icon="mdi:restart"></ha-icon></button>
-                <button class="action-btn" title="Shut Down"   ?disabled=${!this.config.node_shutdown}    @click=${() => this._confirmAction('Shut down',   this.config.node_shutdown)}><ha-icon icon="mdi:power"></ha-icon></button>
-                <button class="action-btn" title="Start All"   ?disabled=${!this.config.node_start_all}   @click=${() => this._handleAction(this.config.node_start_all)}><ha-icon icon="mdi:play-circle-outline"></ha-icon></button>
-                <button class="action-btn" title="Stop All"    ?disabled=${!this.config.node_stop_all}    @click=${() => this._confirmAction('Stop all',    this.config.node_stop_all)}><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>
-                <button class="action-btn" title="Suspend All" ?disabled=${!this.config.node_suspend_all} @click=${() => this._confirmAction('Suspend all', this.config.node_suspend_all)}><ha-icon icon="mdi:pause-circle-outline"></ha-icon></button>
+              <div class="node-actions" @click=${(e) => e.stopPropagation()} @pointerdown=${(e) => e.stopPropagation()}>
+                <button class="action-btn" title="${this._t('card.btn_restart')}"   ?disabled=${!this.config.node_restart}     @click=${() => this._confirmAction(this._t('card.btn_restart'),   this.config.node_restart)}><ha-icon icon="mdi:restart"></ha-icon></button>
+                <button class="action-btn" title="${this._t('card.btn_shutdown')}"  ?disabled=${!this.config.node_shutdown}    @click=${() => this._confirmAction(this._t('card.btn_shutdown'),  this.config.node_shutdown)}><ha-icon icon="mdi:power"></ha-icon></button>
+                <button class="action-btn" title="${this._t('card.btn_start_all')}" ?disabled=${!this.config.node_start_all}   @click=${() => this._handleAction(this.config.node_start_all)}><ha-icon icon="mdi:play-circle-outline"></ha-icon></button>
+                <button class="action-btn" title="${this._t('card.btn_stop_all')}"  ?disabled=${!this.config.node_stop_all}    @click=${() => this._confirmAction(this._t('card.btn_stop_all'),  this.config.node_stop_all)}><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>
+                <button class="action-btn" title="${this._t('card.btn_suspend_all')}" ?disabled=${!this.config.node_suspend_all} @click=${() => this._confirmAction(this._t('card.btn_suspend_all'), this.config.node_suspend_all)}><ha-icon icon="mdi:pause-circle-outline"></ha-icon></button>
               </div>
             ` : ''}
           </div>
@@ -1171,12 +1244,12 @@ class ProxmoxCard extends LitElement {
                         <div class="vm-name">${vm.name}</div>
                         <div class="vm-status">${statusText}</div>
                       </div>
-                      <div class="vm-actions" @click=${(e) => e.stopPropagation()} @mousedown=${(e) => e.stopPropagation()}>
-                        <button class="action-btn" title="Start"    ?disabled=${isRunning || !vm.start}     @click=${() => this._handleAction(vm.start)}><ha-icon icon="mdi:play"></ha-icon></button>
-                        <button class="action-btn" title="Shutdown" ?disabled=${!isRunning || !vm.shutdown} @click=${() => this._confirmAction('Shutdown', vm.shutdown)}><ha-icon icon="mdi:power"></ha-icon></button>
-                        <button class="action-btn" title="Stop"     ?disabled=${!isRunning || !vm.stop}     @click=${() => this._confirmAction('Stop',     vm.stop)}><ha-icon icon="mdi:stop"></ha-icon></button>
-                        <button class="action-btn" title="Reboot"   ?disabled=${!isRunning || !vm.reboot}   @click=${() => this._confirmAction('Reboot',   vm.reboot)}><ha-icon icon="mdi:restart"></ha-icon></button>
-                        <button class="action-btn" title="Snapshot" ?disabled=${!isRunning || !vm.snapshot} @click=${() => this._handleAction(vm.snapshot)}><ha-icon icon="mdi:camera"></ha-icon></button>
+                      <div class="vm-actions" @click=${(e) => e.stopPropagation()} @pointerdown=${(e) => e.stopPropagation()}>
+                        <button class="action-btn" title="${this._t('card.btn_start')}"    ?disabled=${isRunning || !vm.start}     @click=${() => this._handleAction(vm.start)}><ha-icon icon="mdi:play"></ha-icon></button>
+                        <button class="action-btn" title="${this._t('card.btn_shutdown')}" ?disabled=${!isRunning || !vm.shutdown} @click=${() => this._confirmAction(this._t('card.btn_shutdown'), vm.shutdown)}><ha-icon icon="mdi:power"></ha-icon></button>
+                        <button class="action-btn" title="${this._t('card.btn_stop')}"     ?disabled=${!isRunning || !vm.stop}     @click=${() => this._confirmAction(this._t('card.btn_stop'),     vm.stop)}><ha-icon icon="mdi:stop"></ha-icon></button>
+                        <button class="action-btn" title="${this._t('card.btn_reboot')}"   ?disabled=${!isRunning || !vm.reboot}   @click=${() => this._confirmAction(this._t('card.btn_reboot'),   vm.reboot)}><ha-icon icon="mdi:restart"></ha-icon></button>
+                        <button class="action-btn" title="${this._t('card.btn_snapshot')}" ?disabled=${!isRunning || !vm.snapshot} @click=${() => this._handleAction(vm.snapshot)}><ha-icon icon="mdi:camera"></ha-icon></button>
                       </div>
                     </div>
                     ${metrics.length > 0 ? html`
@@ -1199,10 +1272,10 @@ class ProxmoxCard extends LitElement {
 
         ${this._pendingAction ? html`
           <ha-dialog open @closed=${this._confirmNo} .heading=${this._pendingAction.label}>
-            <p style="margin:0 0 24px;">Are you sure you want to: <strong>${this._pendingAction.label}</strong>?</p>
+            <p style="margin:0 0 24px;">${this._t('editor.confirm.action_body')} <strong>${this._pendingAction.label}</strong>?</p>
             <div class="confirm-actions">
-              <button class="confirm-btn cancel" @click=${this._confirmNo}>Cancel</button>
-              <button class="confirm-btn destructive" @click=${this._confirmYes}>Confirm</button>
+              <button class="confirm-btn cancel" @click=${this._confirmNo}>${this._t('editor.confirm.cancel')}</button>
+              <button class="confirm-btn destructive" @click=${this._confirmYes}>${this._t('editor.confirm.confirm')}</button>
             </div>
           </ha-dialog>
         ` : ''}
